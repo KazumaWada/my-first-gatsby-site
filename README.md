@@ -178,3 +178,88 @@ query MyQuery {
 }
 
 ```
+
+- なぜファイル名が{MDXRenderer.slug}.js なのか。
+  {
+  "data": {
+  "allMdx": {
+  "nodes": [
+  {
+  "slug": "another-post"
+  },
+  {
+  "slug": "my-first-post"
+  },
+  {
+  "slug": "yet-another-post"
+  }
+  ]
+  }
+  },
+  "extensions": {}
+  }
+
+  {MDXRenderer.slug}.js とすることで、タイトル名.js になる。->pages フォルダは全部ファイル名がそのまま/ファイル名になるから、、、(index.js だと自動的に root になるっぽい)
+
+## query variables (投稿の id を QL に分からせて、特定の投稿を pull する)
+
+```javascript
+import * as React from "react";
+import { graphql } from "gatsby";
+import { MDXRenderer } from "gatsby-plugin-mdx";
+
+const BlogPost = ({ data }) => {
+  return (
+    <Layout pageTitle={data.mdx.frontmatter.title}>
+      <p>{data.mdx.frontmatter.date}</p>
+      <MDXRenderer>{data.mdx.body}</MDXRenderer>
+    </Layout>
+  );
+};
+
+export const query = graphql`
+  query ($id: String) {
+    mdx(id: { eq: $id }) {
+      frontmatter {
+        title
+        date(formatString: "MMMM D, YYYY")
+      }
+      body
+    }
+  }
+`;
+```
+
+## なんとなくわかってきた。
+
+データを GraohiQL に追加したり GraphiQL から欲しいデータをとってきて、そのコードを js ファイルに書いて、変数に格納して、html にそれ(変数)を入力する。やってることは Rails,MysQL でも REST でも一緒。
+
+## blog post does loop
+
+```javascript
+{
+  data.allMdx.nodes.map((node) => (
+    <article key={node.id}>
+      <h2>
+        <Link to={`/blog/${node.slug}`}>{node.frontmatter.title}</Link>
+      </h2>
+      <p>Posted: {node.frontmatter.date}</p>
+    </article>
+  ));
+}
+
+export const query = graphql`
+  query {
+    allMdx(sort: { fields: frontmatter___date, order: DESC }) {
+      nodes {
+        frontmatter {
+          date(formatString: "MMMM D, YYYY")
+          title
+        }
+        id
+        slug
+      }
+    }
+  }
+`;
+```
