@@ -263,3 +263,5 @@ export const query = graphql`
   }
 `;
 ```
+
+## frontmatter に項目を追加して、gatsby develop をリスタートさせれば、GraphiQL に項目が追加されている。
